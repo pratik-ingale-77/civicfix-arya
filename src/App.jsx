@@ -1,14 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import Map from './components/Map'
 
-const demoIssue = {
-  category: 'Pothole',
-  confidence: 94,
-  priority: 'High',
-  location: '1240 Market Street, San Francisco',
-  description: 'Deep pothole affecting the right lane near the crosswalk.',
-}
+const API_URL = 'https://eradicate-atlantic-setting.ngrok-free.dev'
 
 const navItems = [
   { label: 'Home', page: 'home' },
@@ -18,56 +11,16 @@ const navItems = [
 
 function Icon({ name, size = 20 }) {
   const paths = {
-    arrow: (
-      <>
-        <path d="M5 12h14" />
-        <path d="m13 6 6 6-6 6" />
-      </>
-    ),
-    pin: (
-      <>
-        <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
-        <circle cx="12" cy="10" r="2.5" />
-      </>
-    ),
-    camera: (
-      <>
-        <path d="M4 7h3l1.5-2h7L17 7h3v11H4Z" />
-        <circle cx="12" cy="12.5" r="3" />
-      </>
-    ),
-    clock: (
-      <>
-        <circle cx="12" cy="12" r="8" />
-        <path d="M12 8v4l2.5 2" />
-      </>
-    ),
-    check: <path d="m5 12 4 4L19 6" />,
-    search: (
-      <>
-        <circle cx="10.5" cy="10.5" r="6.5" />
-        <path d="m16 16 4 4" />
-      </>
-    ),
-    upload: (
-      <>
-        <path d="M12 16V4m0 0L7 9m5-5 5 5" />
-        <path d="M5 15v4h14v-4" />
-      </>
-    ),
-    shield: (
-      <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />
-    ),
-    menu: (
-      <>
-        <path d="M4 7h16M4 12h16M4 17h16" />
-      </>
-    ),
-    close: (
-      <>
-        <path d="m6 6 12 12M18 6 6 18" />
-      </>
-    ),
+    arrow: <><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></>,
+    pin: <><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
+    camera: <><path d="M4 7h3l1.5-2h7L17 7h3v11H4Z"/><circle cx="12" cy="12.5" r="3"/></>,
+    clock: <><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></>,
+    check: <path d="m5 12 4 4L19 6"/>,
+    search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></>,
+    upload: <><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 15v4h14v-4"/></>,
+    shield: <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z"/>,
+    menu: <><path d="M4 7h16M4 12h16M4 17h16"/></>,
+    close: <><path d="m6 6 12 12M18 6 6 18"/></>,
   }
 
   return (
@@ -122,7 +75,6 @@ function Navbar({ page, navigate }) {
         <span className="brand-mark">
           <Icon name="shield" size={19} />
         </span>
-
         <span>
           Civic<span>Fix</span>
         </span>
@@ -168,7 +120,6 @@ function Footer({ navigate }) {
           <span className="brand-mark">
             <Icon name="shield" size={17} />
           </span>
-
           <span>
             Civic<span>Fix</span>
           </span>
@@ -207,8 +158,8 @@ function Home({ navigate }) {
           </h1>
 
           <p className="hero-lede">
-            CivicFix helps you turn a photo of a problem into action. Fast,
-            clear, and built for the people who live here.
+            CivicFix helps you turn a photo of a problem into action.
+            Fast, clear, and built for the people who live here.
           </p>
 
           <div className="hero-actions">
@@ -264,14 +215,13 @@ function Home({ navigate }) {
             </span>
 
             <span>
-              <strong>AI identified</strong>
-              <small>Pothole · 94% confidence</small>
+              <strong>AI powered</strong>
+              <small>Smart civic issue detection</small>
             </span>
           </div>
 
           <div className="floating-card response-float">
             <span className="response-number">24h</span>
-
             <span>
               Average first
               <br />
@@ -352,8 +302,10 @@ function Home({ navigate }) {
     </main>
   )
 }
+
 function Report({ navigate, report, setReport }) {
   const inputRef = useRef(null)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -362,24 +314,10 @@ function Report({ navigate, report, setReport }) {
 
     if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please select a valid image file.')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Image must be smaller than 10MB.')
-      return
-    }
-
-    const previewUrl = URL.createObjectURL(file)
-
     setReport((current) => ({
       ...current,
-      image: previewUrl,
-      imageFile: file,
-      analyzed: false,
-      submitted: false,
+      file,
+      image: URL.createObjectURL(file),
     }))
 
     setError('')
@@ -389,61 +327,29 @@ function Report({ navigate, report, setReport }) {
     setError('')
 
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser.')
+      setError('Geolocation is not supported on this device.')
       return
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const { latitude, longitude } = position.coords
 
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
-          )
-
-          if (!response.ok) {
-            throw new Error('Failed to find address')
-          }
-
-          const data = await response.json()
-
-          setReport((current) => ({
-            ...current,
-            location:
-              data.display_name ||
-              `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-            latitude,
-            longitude,
-          }))
-        } catch {
-          setReport((current) => ({
-            ...current,
-            location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-            latitude,
-            longitude,
-          }))
-
-          setError(
-            'Could not convert coordinates to an address. Coordinates saved.'
-          )
-        }
+        setReport((current) => ({
+          ...current,
+          latitude,
+          longitude,
+          location: `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+        }))
       },
       () => {
-        setError(
-          'Unable to get your location. Please allow location access.'
-        )
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        setError('Unable to access your location.')
       }
     )
   }
 
-  const analyze = () => {
-    if (!report.imageFile) {
+  const analyze = async () => {
+    if (!report.file) {
       setError('Please upload a photo first.')
       return
     }
@@ -451,40 +357,75 @@ function Report({ navigate, report, setReport }) {
     setLoading(true)
     setError('')
 
-    // Frontend-only demo analysis.
-    // Backend AI will replace this later.
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const formData = new FormData()
+
+      formData.append('image', report.file)
+
+      if (report.description) {
+        formData.append('description', report.description)
+      }
+
+      if (report.latitude) {
+        formData.append('latitude', report.latitude)
+      }
+
+      if (report.longitude) {
+        formData.append('longitude', report.longitude)
+      }
+
+      const response = await fetch(`${API_URL}/analyze`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`)
+      }
+
+      const data = await response.json()
 
       setReport((current) => ({
         ...current,
-        category: demoIssue.category,
-        confidence: demoIssue.confidence,
-        priority: demoIssue.priority,
+        ...data,
         analyzed: true,
       }))
 
       navigate('result')
-    }, 900)
+    } catch (err) {
+      console.error(err)
+      setError(
+        'AI analysis failed. Please make sure your backend is running.'
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <main className="subpage">
       <section className="page-pad narrow-header">
         <p className="eyebrow">New report</p>
-
         <h1>What needs fixing?</h1>
-
         <p>
-          Give us the details and we'll route your report to the right people.
+          Give us the details and we'll route your report to the right
+          people.
         </p>
       </section>
 
       <section className="report-layout page-pad">
         <div className="form-panel">
           <div
-            className={`upload-zone ${report.image ? 'has-image' : ''}`}
+            className={`upload-zone ${
+              report.image ? 'has-image' : ''
+            }`}
             onClick={() => inputRef.current?.click()}
+            role="button"
+            tabIndex="0"
+            onKeyDown={(event) =>
+              event.key === 'Enter' &&
+              inputRef.current?.click()
+            }
           >
             {report.image ? (
               <img src={report.image} alt="Selected civic issue" />
@@ -505,7 +446,7 @@ function Report({ navigate, report, setReport }) {
               onChange={handleFile}
               type="file"
               accept="image/*"
-              hidden
+              capture="environment"
             />
           </div>
 
@@ -513,7 +454,7 @@ function Report({ navigate, report, setReport }) {
             <div>
               <label>Location</label>
 
-              <p>
+              <p className={report.location ? 'location-set' : ''}>
                 <Icon name="pin" size={16} />
                 {report.location || 'No location selected'}
               </p>
@@ -528,7 +469,10 @@ function Report({ navigate, report, setReport }) {
             </Button>
           </div>
 
-          <label className="field-label" htmlFor="description">
+          <label
+            className="field-label"
+            htmlFor="description"
+          >
             Tell us more <span>Optional</span>
           </label>
 
@@ -552,31 +496,58 @@ function Report({ navigate, report, setReport }) {
             disabled={loading}
             icon="arrow"
           >
-            {loading ? 'Analyzing photo...' : 'Analyze issue'}
+            {loading ? (
+              <>
+                <span className="spinner" />
+                Analyzing with AI...
+              </>
+            ) : (
+              'Analyze issue'
+            )}
           </Button>
+
+          <p className="privacy-note">
+            <Icon name="shield" size={14} />
+            Your report helps improve your neighborhood.
+          </p>
         </div>
+
+        <aside className="side-note">
+          <span className="side-note-icon">
+            <Icon name="shield" size={22} />
+          </span>
+
+          <h3>Smart routing</h3>
+
+          <p>
+            Our AI looks at your photo and details to identify
+            the issue and send it to the right city team.
+          </p>
+
+          <div className="side-rule" />
+
+          <p className="small-copy">
+            Your location is only used to find the right service
+            area.
+          </p>
+        </aside>
       </section>
     </main>
   )
 }
-
 function Result({ navigate, report, setReport }) {
   const [submitted, setSubmitted] = useState(false)
 
   const submit = () => {
-    const generatedId =
-      report.id ||
-      `CF-${new Date().getFullYear()}-${Math.floor(
-        1000 + Math.random() * 9000
-      )}`
+    const complaintId = `CF-${Date.now().toString().slice(-6)}`
+
+    setSubmitted(true)
 
     setReport((current) => ({
       ...current,
       submitted: true,
-      id: generatedId,
+      id: complaintId,
     }))
-
-    setSubmitted(true)
   }
 
   if (submitted) {
@@ -591,8 +562,8 @@ function Result({ navigate, report, setReport }) {
         <h1>Thanks for speaking up.</h1>
 
         <p>
-          Your report is now with the city team. We'll keep you posted
-          as it moves forward.
+          Your report is now with the city team. We'll keep you
+          posted as it moves forward.
         </p>
 
         <div className="complaint-id">
@@ -631,7 +602,8 @@ function Result({ navigate, report, setReport }) {
         <h1>Here's what we found.</h1>
 
         <p>
-          Review the details before sending your report to the city.
+          Review the details before sending your report to the
+          city.
         </p>
       </section>
 
@@ -656,11 +628,11 @@ function Result({ navigate, report, setReport }) {
 
             <div>
               <span>Detected category</span>
-              <h2>{report.category || demoIssue.category}</h2>
+              <h2>{report.category || 'Issue detected'}</h2>
             </div>
 
             <span className="confidence">
-              {report.confidence ?? demoIssue.confidence}%
+              {report.confidence ?? '--'}%
               <small>confidence</small>
             </span>
           </div>
@@ -670,7 +642,7 @@ function Result({ navigate, report, setReport }) {
               <span>Priority</span>
 
               <strong className="priority-high">
-                ● {report.priority || demoIssue.priority}
+                ● {report.priority || 'Medium'}
               </strong>
             </div>
 
@@ -679,7 +651,7 @@ function Result({ navigate, report, setReport }) {
 
               <strong>
                 <Icon name="pin" size={15} />
-                {report.location || 'Location not available'}
+                {report.location || 'Location not provided'}
               </strong>
             </div>
           </div>
@@ -688,7 +660,8 @@ function Result({ navigate, report, setReport }) {
             <span>Your description</span>
 
             <p>
-              {report.description || demoIssue.description}
+              {report.description ||
+                'No additional description provided.'}
             </p>
           </div>
 
@@ -713,8 +686,10 @@ function Tracking({ report }) {
   const [searched, setSearched] = useState(Boolean(report.submitted))
 
   const complaint = {
-    ...demoIssue,
-    ...report,
+    category: report.category || 'Civic issue',
+    description: report.description || 'Civic issue reported by resident.',
+    location: report.location || 'Location not provided',
+    id: report.id || '',
   }
 
   const statuses = [
@@ -725,17 +700,6 @@ function Tracking({ report }) {
     'Resolved',
   ]
 
-  const handleSearch = () => {
-    const trimmedQuery = query.trim()
-
-    if (!trimmedQuery) {
-      setSearched(false)
-      return
-    }
-
-    setSearched(true)
-  }
-
   return (
     <main className="subpage tracking-page">
       <section className="page-pad narrow-header">
@@ -744,7 +708,8 @@ function Tracking({ report }) {
         <h1>Follow it through.</h1>
 
         <p>
-          Stay in the loop from your first report to a cleaner, safer city.
+          Stay in the loop from your first report to a cleaner,
+          safer city.
         </p>
       </section>
 
@@ -755,32 +720,20 @@ function Tracking({ report }) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                handleSearch()
-              }
-            }}
             placeholder="Enter your complaint ID"
           />
 
-          <Button onClick={handleSearch}>
+          <Button
+            onClick={() => setSearched(Boolean(query.trim()))}
+          >
             Search
           </Button>
         </div>
 
-        {report.id && (
-          <p>
-            Your complaint ID:{' '}
-            <button
-              onClick={() => {
-                setQuery(report.id)
-                setSearched(true)
-              }}
-            >
-              {report.id}
-            </button>
-          </p>
-        )}
+        <p>
+          Enter the complaint ID generated after submitting your
+          report.
+        </p>
       </section>
 
       {searched ? (
@@ -793,25 +746,24 @@ function Tracking({ report }) {
 
               <h2>{complaint.category}</h2>
 
-              <p>
-                {complaint.description || demoIssue.description}
-              </p>
+              <p>{complaint.description}</p>
             </div>
 
             <div className="tracking-id">
               <span>Complaint ID</span>
-              <strong>{query}</strong>
+              <strong>{query || complaint.id}</strong>
             </div>
           </div>
 
           <div className="tracking-meta">
             <span>
-              <Icon name="pin" size={16} />{' '}
-              {complaint.location || 'Location not available'}
+              <Icon name="pin" size={16} />
+              {complaint.location}
             </span>
 
             <span>
-              <Icon name="clock" size={16} /> Updated today
+              <Icon name="clock" size={16} />
+              Updated just now
             </span>
           </div>
 
@@ -846,9 +798,9 @@ function Tracking({ report }) {
             </span>
 
             <p>
-              <strong>A city crew has been assigned.</strong>
+              <strong>Your complaint is being processed.</strong>
               <br />
-              They are scheduled to inspect this issue within 2 business days.
+              The city team will review the reported issue.
             </p>
           </div>
         </section>
@@ -861,7 +813,8 @@ function Tracking({ report }) {
           <h2>Enter an ID to see your report</h2>
 
           <p>
-            Your complaint timeline and latest updates will appear here.
+            Your complaint timeline and latest updates will
+            appear here.
           </p>
         </div>
       )}
@@ -877,8 +830,9 @@ function App() {
   const [report, setReport] = useState({})
 
   useEffect(() => {
-    const onHash = () =>
+    const onHash = () => {
       setPage(window.location.hash.slice(1) || 'home')
+    }
 
     window.addEventListener('hashchange', onHash)
 
@@ -919,4 +873,5 @@ function App() {
 }
 
 export default App
+
       
