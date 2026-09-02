@@ -11,16 +11,54 @@ const navItems = [
 
 function Icon({ name, size = 20 }) {
   const paths = {
-    arrow: <><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></>,
-    pin: <><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
-    camera: <><path d="M4 7h3l1.5-2h7L17 7h3v11H4Z"/><circle cx="12" cy="12.5" r="3"/></>,
-    clock: <><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></>,
-    check: <path d="m5 12 4 4L19 6"/>,
-    search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></>,
-    upload: <><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 15v4h14v-4"/></>,
-    shield: <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z"/>,
-    menu: <><path d="M4 7h16M4 12h16M4 17h16"/></>,
-    close: <><path d="m6 6 12 12M18 6 6 18"/></>,
+    arrow: (
+      <>
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </>
+    ),
+    pin: (
+      <>
+        <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+        <circle cx="12" cy="10" r="2.5" />
+      </>
+    ),
+    camera: (
+      <>
+        <path d="M4 7h3l1.5-2h7L17 7h3v11H4Z" />
+        <circle cx="12" cy="12.5" r="3" />
+      </>
+    ),
+    clock: (
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 8v4l2.5 2" />
+      </>
+    ),
+    check: <path d="m5 12 4 4L19 6" />,
+    search: (
+      <>
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <path d="m16 16 4 4" />
+      </>
+    ),
+    upload: (
+      <>
+        <path d="M12 16V4m0 0L7 9m5-5 5 5" />
+        <path d="M5 15v4h14v-4" />
+      </>
+    ),
+    shield: <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />,
+    menu: (
+      <>
+        <path d="M4 7h16M4 12h16M4 17h16" />
+      </>
+    ),
+    close: (
+      <>
+        <path d="m6 6 12 12M18 6 6 18" />
+      </>
+    ),
   }
 
   return (
@@ -222,6 +260,7 @@ function Home({ navigate }) {
 
           <div className="floating-card response-float">
             <span className="response-number">24h</span>
+
             <span>
               Average first
               <br />
@@ -331,19 +370,73 @@ function Report({ navigate, report, setReport }) {
       return
     }
 
+    setReport((current) => ({
+      ...current,
+      location: 'Getting your location...',
+    }))
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords
 
         setReport((current) => ({
           ...current,
           latitude,
           longitude,
-          location: `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+          location: 'Finding address...',
         }))
+
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          )
+
+          if (!response.ok) {
+            throw new Error('Unable to find address')
+          }
+
+          const data = await response.json()
+          const address = data.address || {}
+
+          const readableLocation = [
+            address.road,
+            address.neighbourhood ||
+              address.suburb ||
+              address.village ||
+              address.town ||
+              address.city,
+            address.state,
+            address.postcode,
+          ]
+            .filter(Boolean)
+            .join(', ')
+
+          setReport((current) => ({
+            ...current,
+            latitude,
+            longitude,
+            location:
+              readableLocation ||
+              data.display_name ||
+              `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+          }))
+        } catch (error) {
+          console.error('Reverse geocoding failed:', error)
+
+          setReport((current) => ({
+            ...current,
+            latitude,
+            longitude,
+            location: `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+          }))
+        }
       },
       () => {
         setError('Unable to access your location.')
+        setReport((current) => ({
+          ...current,
+          location: '',
+        }))
       }
     )
   }
@@ -394,6 +487,7 @@ function Report({ navigate, report, setReport }) {
       navigate('result')
     } catch (err) {
       console.error(err)
+
       setError(
         'AI analysis failed. Please make sure your backend is running.'
       )
@@ -406,7 +500,9 @@ function Report({ navigate, report, setReport }) {
     <main className="subpage">
       <section className="page-pad narrow-header">
         <p className="eyebrow">New report</p>
+
         <h1>What needs fixing?</h1>
+
         <p>
           Give us the details and we'll route your report to the right
           people.
@@ -436,7 +532,11 @@ function Report({ navigate, report, setReport }) {
                 </span>
 
                 <strong>Upload a photo</strong>
-                <span>or take one with your camera</span>
+
+                <span>
+                  Choose from gallery/files or take a photo
+                </span>
+
                 <small>JPG, PNG up to 10MB</small>
               </>
             )}
@@ -446,7 +546,6 @@ function Report({ navigate, report, setReport }) {
               onChange={handleFile}
               type="file"
               accept="image/*"
-              capture="environment"
             />
           </div>
 
@@ -535,6 +634,7 @@ function Report({ navigate, report, setReport }) {
     </main>
   )
 }
+
 function Result({ navigate, report, setReport }) {
   const [submitted, setSubmitted] = useState(false)
 
@@ -687,7 +787,8 @@ function Tracking({ report }) {
 
   const complaint = {
     category: report.category || 'Civic issue',
-    description: report.description || 'Civic issue reported by resident.',
+    description:
+      report.description || 'Civic issue reported by resident.',
     location: report.location || 'Location not provided',
     id: report.id || '',
   }
