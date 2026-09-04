@@ -966,6 +966,7 @@ function App() {
 
   return (
     <>
+      <div className="india-flag-animation">🇮🇳</div>
       <Navbar page={page} navigate={navigate} />
       {content}
       <Footer navigate={navigate} />
