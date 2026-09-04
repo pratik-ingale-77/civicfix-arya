@@ -966,7 +966,27 @@ function App() {
 
   return (
     <>
-      <div className="india-flag-animation">🇮🇳</div>
+      <div className="india-flag-animation">
+  <div className="india-flag-pole"></div>
+
+  <div className="india-flag">
+    <div className="flag-stripe flag-saffron"></div>
+
+    <div className="flag-stripe flag-white">
+      <div className="ashoka-chakra">
+        {Array.from({ length: 24 }, (_, i) => (
+          <span
+            key={i}
+            className="chakra-spoke"
+            style={{ transform: `rotate(${i * 15}deg)` }}
+          ></span>
+        ))}
+      </div>
+    </div>
+
+    <div className="flag-stripe flag-green"></div>
+  </div>
+</div>
       <Navbar page={page} navigate={navigate} />
       {content}
       <Footer navigate={navigate} />
