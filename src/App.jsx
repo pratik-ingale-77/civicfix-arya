@@ -48,7 +48,9 @@ function Icon({ name, size = 20 }) {
         <path d="M5 15v4h14v-4" />
       </>
     ),
-    shield: <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />,
+    shield: (
+      <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />
+    ),
     menu: (
       <>
         <path d="M4 7h16M4 12h16M4 17h16" />
@@ -113,6 +115,7 @@ function Navbar({ page, navigate }) {
         <span className="brand-mark">
           <Icon name="shield" size={19} />
         </span>
+
         <span>
           Civic<span>Fix</span>
         </span>
@@ -158,6 +161,7 @@ function Footer({ navigate }) {
           <span className="brand-mark">
             <Icon name="shield" size={17} />
           </span>
+
           <span>
             Civic<span>Fix</span>
           </span>
@@ -201,7 +205,10 @@ function Home({ navigate }) {
           </p>
 
           <div className="hero-actions">
-            <Button onClick={() => navigate('report')} icon="arrow">
+            <Button
+              onClick={() => navigate('report')}
+              icon="arrow"
+            >
               Report an issue
             </Button>
 
@@ -334,7 +341,10 @@ function Home({ navigate }) {
           <h2>See something? Say something.</h2>
         </div>
 
-        <Button onClick={() => navigate('report')} icon="arrow">
+        <Button
+          onClick={() => navigate('report')}
+          icon="arrow"
+        >
           Start a report
         </Button>
       </section>
@@ -433,6 +443,7 @@ function Report({ navigate, report, setReport }) {
       },
       () => {
         setError('Unable to access your location.')
+
         setReport((current) => ({
           ...current,
           location: '',
@@ -524,7 +535,10 @@ function Report({ navigate, report, setReport }) {
             }
           >
             {report.image ? (
-              <img src={report.image} alt="Selected civic issue" />
+              <img
+                src={report.image}
+                alt="Selected civic issue"
+              />
             ) : (
               <>
                 <span className="upload-icon">
@@ -634,7 +648,6 @@ function Report({ navigate, report, setReport }) {
     </main>
   )
 }
-
 function Result({ navigate, report, setReport }) {
   const [submitted, setSubmitted] = useState(false)
 
@@ -765,7 +778,10 @@ function Result({ navigate, report, setReport }) {
             </p>
           </div>
 
-          <Button onClick={submit} icon="arrow">
+          <Button
+            onClick={submit}
+            icon="arrow"
+          >
             Submit complaint
           </Button>
 
@@ -783,13 +799,20 @@ function Result({ navigate, report, setReport }) {
 
 function Tracking({ report }) {
   const [query, setQuery] = useState(report.id || '')
-  const [searched, setSearched] = useState(Boolean(report.submitted))
+  const [searched, setSearched] = useState(
+    Boolean(report.submitted)
+  )
 
   const complaint = {
     category: report.category || 'Civic issue',
+
     description:
-      report.description || 'Civic issue reported by resident.',
-    location: report.location || 'Location not provided',
+      report.description ||
+      'Civic issue reported by resident.',
+
+    location:
+      report.location || 'Location not provided',
+
     id: report.id || '',
   }
 
@@ -825,7 +848,9 @@ function Tracking({ report }) {
           />
 
           <Button
-            onClick={() => setSearched(Boolean(query.trim()))}
+            onClick={() =>
+              setSearched(Boolean(query.trim()))
+            }
           >
             Search
           </Button>
@@ -899,7 +924,9 @@ function Tracking({ report }) {
             </span>
 
             <p>
-              <strong>Your complaint is being processed.</strong>
+              <strong>
+                Your complaint is being processed.
+              </strong>
               <br />
               The city team will review the reported issue.
             </p>
@@ -932,7 +959,9 @@ function App() {
 
   useEffect(() => {
     const onHash = () => {
-      setPage(window.location.hash.slice(1) || 'home')
+      setPage(
+        window.location.hash.slice(1) || 'home'
+      )
     }
 
     window.addEventListener('hashchange', onHash)
@@ -966,34 +995,16 @@ function App() {
 
   return (
     <>
-      <div className="india-flag-animation">
-  <div className="india-flag-pole"></div>
-
-  <div className="india-flag">
-    <div className="flag-stripe flag-saffron"></div>
-
-    <div className="flag-stripe flag-white">
-      <div className="ashoka-chakra">
-        {Array.from({ length: 24 }, (_, i) => (
-          <span
-            key={i}
-            className="chakra-spoke"
-            style={{ transform: `rotate(${i * 15}deg)` }}
-          ></span>
-        ))}
-      </div>
-    </div>
-
-    <div className="flag-stripe flag-green"></div>
-  </div>
-</div>
       <Navbar page={page} navigate={navigate} />
+
       {content}
+
       <Footer navigate={navigate} />
     </>
   )
 }
 
 export default App
+
 
       
