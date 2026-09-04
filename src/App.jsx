@@ -48,9 +48,7 @@ function Icon({ name, size = 20 }) {
         <path d="M5 15v4h14v-4" />
       </>
     ),
-    shield: (
-      <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />
-    ),
+    shield: <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />,
     menu: (
       <>
         <path d="M4 7h16M4 12h16M4 17h16" />
@@ -205,10 +203,7 @@ function Home({ navigate }) {
           </p>
 
           <div className="hero-actions">
-            <Button
-              onClick={() => navigate('report')}
-              icon="arrow"
-            >
+            <Button onClick={() => navigate('report')} icon="arrow">
               Report an issue
             </Button>
 
@@ -341,10 +336,7 @@ function Home({ navigate }) {
           <h2>See something? Say something.</h2>
         </div>
 
-        <Button
-          onClick={() => navigate('report')}
-          icon="arrow"
-        >
+        <Button onClick={() => navigate('report')} icon="arrow">
           Start a report
         </Button>
       </section>
@@ -363,6 +355,10 @@ function Report({ navigate, report, setReport }) {
 
     if (!file) return
 
+    // IMPORTANT:
+    // Keep BOTH file and image.
+    // file is sent to the AI API.
+    // image is only used for preview.
     setReport((current) => ({
       ...current,
       file,
@@ -452,6 +448,9 @@ function Report({ navigate, report, setReport }) {
     )
   }
 
+  // ============================================================
+  // WORKING AI CONNECTION — DO NOT REMOVE THIS
+  // ============================================================
   const analyze = async () => {
     if (!report.file) {
       setError('Please upload a photo first.')
@@ -464,43 +463,69 @@ function Report({ navigate, report, setReport }) {
     try {
       const formData = new FormData()
 
+      // The Flask AI API expects the uploaded image
+      // under the field name "image".
       formData.append('image', report.file)
 
       if (report.description) {
         formData.append('description', report.description)
       }
 
-      if (report.latitude) {
-        formData.append('latitude', report.latitude)
+      if (report.latitude != null) {
+        formData.append('latitude', String(report.latitude))
       }
 
-      if (report.longitude) {
-        formData.append('longitude', report.longitude)
+      if (report.longitude != null) {
+        formData.append('longitude', String(report.longitude))
       }
+
+      console.log('Sending image to CivicFix AI...')
 
       const response = await fetch(`${API_URL}/analyze`, {
         method: 'POST',
         body: formData,
       })
 
+      console.log('AI response status:', response.status)
+
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`)
+        const errorText = await response.text()
+        console.error('AI server error:', errorText)
+
+        throw new Error(`AI server error: ${response.status}`)
       }
 
       const data = await response.json()
 
+      console.log('AI response:', data)
+
+      // Your AI previously returned:
+      // {
+      //   success: true,
+      //   result: {
+      //     category: "...",
+      //     confidence: 98,
+      //     priority: "...",
+      //     description: "..."
+      //   }
+      // }
+      //
+      // So use data.result when it exists.
+      const aiResult = data.result || data.ai || data
+
       setReport((current) => ({
         ...current,
-        ...data,
+        ...aiResult,
+        aiResponse: data,
         analyzed: true,
       }))
 
       navigate('result')
     } catch (err) {
-      console.error(err)
+      console.error('AI analysis failed:', err)
 
       setError(
-        'AI analysis failed. Please make sure your backend is running.'
+        'AI analysis failed. Please make sure your AI backend is running.'
       )
     } finally {
       setLoading(false)
@@ -535,10 +560,7 @@ function Report({ navigate, report, setReport }) {
             }
           >
             {report.image ? (
-              <img
-                src={report.image}
-                alt="Selected civic issue"
-              />
+              <img src={report.image} alt="Selected civic issue" />
             ) : (
               <>
                 <span className="upload-icon">
@@ -582,10 +604,7 @@ function Report({ navigate, report, setReport }) {
             </Button>
           </div>
 
-          <label
-            className="field-label"
-            htmlFor="description"
-          >
+          <label className="field-label" htmlFor="description">
             Tell us more <span>Optional</span>
           </label>
 
@@ -633,21 +652,20 @@ function Report({ navigate, report, setReport }) {
           <h3>Smart routing</h3>
 
           <p>
-            Our AI looks at your photo and details to identify
-            the issue and send it to the right city team.
+            Our AI looks at your photo and details to identify the issue
+            and send it to the right city team.
           </p>
 
           <div className="side-rule" />
 
           <p className="small-copy">
-            Your location is only used to find the right service
-            area.
+            Your location is only used to find the right service area.
           </p>
         </aside>
       </section>
     </main>
   )
-}
+        }
 function Result({ navigate, report, setReport }) {
   const [submitted, setSubmitted] = useState(false)
 
@@ -675,8 +693,8 @@ function Result({ navigate, report, setReport }) {
         <h1>Thanks for speaking up.</h1>
 
         <p>
-          Your report is now with the city team. We'll keep you
-          posted as it moves forward.
+          Your report is now with the city team. We'll keep you posted as
+          it moves forward.
         </p>
 
         <div className="complaint-id">
@@ -686,10 +704,7 @@ function Result({ navigate, report, setReport }) {
         </div>
 
         <div className="hero-actions">
-          <Button
-            onClick={() => navigate('tracking')}
-            icon="arrow"
-          >
+          <Button onClick={() => navigate('tracking')} icon="arrow">
             Track complaint
           </Button>
 
@@ -715,8 +730,7 @@ function Result({ navigate, report, setReport }) {
         <h1>Here's what we found.</h1>
 
         <p>
-          Review the details before sending your report to the
-          city.
+          Review the details before sending your report to the city.
         </p>
       </section>
 
@@ -778,10 +792,7 @@ function Result({ navigate, report, setReport }) {
             </p>
           </div>
 
-          <Button
-            onClick={submit}
-            icon="arrow"
-          >
+          <Button onClick={submit} icon="arrow">
             Submit complaint
           </Button>
 
@@ -799,20 +810,13 @@ function Result({ navigate, report, setReport }) {
 
 function Tracking({ report }) {
   const [query, setQuery] = useState(report.id || '')
-  const [searched, setSearched] = useState(
-    Boolean(report.submitted)
-  )
+  const [searched, setSearched] = useState(Boolean(report.submitted))
 
   const complaint = {
     category: report.category || 'Civic issue',
-
     description:
-      report.description ||
-      'Civic issue reported by resident.',
-
-    location:
-      report.location || 'Location not provided',
-
+      report.description || 'Civic issue reported by resident.',
+    location: report.location || 'Location not provided',
     id: report.id || '',
   }
 
@@ -832,8 +836,8 @@ function Tracking({ report }) {
         <h1>Follow it through.</h1>
 
         <p>
-          Stay in the loop from your first report to a cleaner,
-          safer city.
+          Stay in the loop from your first report to a cleaner, safer
+          city.
         </p>
       </section>
 
@@ -848,17 +852,14 @@ function Tracking({ report }) {
           />
 
           <Button
-            onClick={() =>
-              setSearched(Boolean(query.trim()))
-            }
+            onClick={() => setSearched(Boolean(query.trim()))}
           >
             Search
           </Button>
         </div>
 
         <p>
-          Enter the complaint ID generated after submitting your
-          report.
+          Enter the complaint ID generated after submitting your report.
         </p>
       </section>
 
@@ -924,9 +925,7 @@ function Tracking({ report }) {
             </span>
 
             <p>
-              <strong>
-                Your complaint is being processed.
-              </strong>
+              <strong>Your complaint is being processed.</strong>
               <br />
               The city team will review the reported issue.
             </p>
@@ -941,8 +940,7 @@ function Tracking({ report }) {
           <h2>Enter an ID to see your report</h2>
 
           <p>
-            Your complaint timeline and latest updates will
-            appear here.
+            Your complaint timeline and latest updates will appear here.
           </p>
         </div>
       )}
@@ -959,9 +957,7 @@ function App() {
 
   useEffect(() => {
     const onHash = () => {
-      setPage(
-        window.location.hash.slice(1) || 'home'
-      )
+      setPage(window.location.hash.slice(1) || 'home')
     }
 
     window.addEventListener('hashchange', onHash)
@@ -996,9 +992,7 @@ function App() {
   return (
     <>
       <Navbar page={page} navigate={navigate} />
-
       {content}
-
       <Footer navigate={navigate} />
     </>
   )
