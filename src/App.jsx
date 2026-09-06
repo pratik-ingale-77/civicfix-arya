@@ -48,7 +48,9 @@ function Icon({ name, size = 20 }) {
         <path d="M5 15v4h14v-4" />
       </>
     ),
-    shield: <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />,
+    shield: (
+      <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />
+    ),
     menu: (
       <>
         <path d="M4 7h16M4 12h16M4 17h16" />
@@ -176,6 +178,10 @@ function Footer({ navigate }) {
   )
 }
 
+/* ============================================================
+   HOME PAGE
+   ============================================================ */
+
 function Home({ navigate }) {
   const steps = [
     ['01', 'Upload a photo', 'Show us what needs attention.'],
@@ -186,6 +192,7 @@ function Home({ navigate }) {
 
   return (
     <main>
+      {/* HERO */}
       <section className="hero-section page-pad">
         <div className="hero-copy">
           <p className="eyebrow">
@@ -215,85 +222,66 @@ function Home({ navigate }) {
               Track a complaint
             </Button>
           </div>
-
-          <div className="trust-note">
-            <span className="avatar-stack">
-              <i>J</i>
-              <i>M</i>
-              <i>A</i>
-            </span>
-
-            <span>
-              <strong>12,400+</strong> residents making a difference
-            </span>
-          </div>
         </div>
 
+        {/* NEW CIVICFIX PROJECT IMAGE */}
         <div className="hero-visual">
           <div className="photo-card">
-            <div className="photo-image" />
-
-            <div className="photo-label">
-              <span className="label-pin">
-                <Icon name="pin" size={14} />
-              </span>
-
-              <span>
-                <strong>Issue spotted</strong>
-                <small>Market Street · San Francisco</small>
-              </span>
-
-              <span className="verified">
-                <Icon name="check" size={15} />
-              </span>
-            </div>
-          </div>
-
-          <div className="floating-card ai-float">
-            <span className="float-icon">
-              <Icon name="shield" size={17} />
-            </span>
-
-            <span>
-              <strong>AI powered</strong>
-              <small>Smart civic issue detection</small>
-            </span>
-          </div>
-
-          <div className="floating-card response-float">
-            <span className="response-number">24h</span>
-
-            <span>
-              Average first
-              <br />
-              response
-            </span>
+            <img
+              className="hero-project-image"
+              src="/civicfix-hero.jpg"
+              alt="CivicFix AI-powered civic issue reporting"
+            />
           </div>
         </div>
       </section>
 
-      <section className="stats-strip page-pad">
-        <div>
-          <strong>12,400+</strong>
-          <span>Issues reported</span>
+      {/* PROJECT INFORMATION INSTEAD OF FAKE STATISTICS */}
+      <section className="project-info-strip page-pad">
+        <div className="project-info-item">
+          <span className="project-info-icon">
+            <Icon name="camera" size={22} />
+          </span>
+
+          <div>
+            <strong>AI-Powered Detection</strong>
+            <p>
+              CivicFix analyzes uploaded photos to identify civic problems
+              such as potholes, garbage, damaged roads and water leakage.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <strong>8,920</strong>
-          <span>Issues resolved</span>
+        <div className="project-info-item">
+          <span className="project-info-icon">
+            <Icon name="pin" size={22} />
+          </span>
+
+          <div>
+            <strong>Smart Location</strong>
+            <p>
+              The user's location is captured and converted into a readable
+              address to make every complaint easier to locate.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <strong>72%</strong>
-          <span>Resolved in 7 days</span>
-        </div>
+        <div className="project-info-item">
+          <span className="project-info-icon">
+            <Icon name="shield" size={22} />
+          </span>
 
-        <div>
-          <strong>4.9/5</strong>
-          <span>Community rating</span>
+          <div>
+            <strong>Smart Complaint Routing</strong>
+            <p>
+              AI helps identify the issue and route the complaint toward the
+              appropriate civic department.
+            </p>
+          </div>
         </div>
       </section>
 
+      {/* HOW CIVICFIX WORKS */}
       <section className="how-section page-pad">
         <div className="section-heading">
           <div>
@@ -330,6 +318,7 @@ function Home({ navigate }) {
         </div>
       </section>
 
+      {/* BOTTOM CTA */}
       <section className="callout page-pad">
         <div>
           <p className="eyebrow">Ready when you are</p>
@@ -344,6 +333,10 @@ function Home({ navigate }) {
   )
 }
 
+/* ============================================================
+   REPORT PAGE
+   ============================================================ */
+
 function Report({ navigate, report, setReport }) {
   const inputRef = useRef(null)
 
@@ -355,9 +348,8 @@ function Report({ navigate, report, setReport }) {
 
     if (!file) return
 
-    // IMPORTANT:
     // Keep BOTH file and image.
-    // file is sent to the AI API.
+    // file is sent to AI.
     // image is only used for preview.
     setReport((current) => ({
       ...current,
@@ -448,9 +440,10 @@ function Report({ navigate, report, setReport }) {
     )
   }
 
-  // ============================================================
-  // WORKING AI CONNECTION — DO NOT REMOVE THIS
-  // ============================================================
+  /* ============================================================
+     WORKING AI CONNECTION — DO NOT REMOVE
+     ============================================================ */
+
   const analyze = async () => {
     if (!report.file) {
       setError('Please upload a photo first.')
@@ -463,7 +456,7 @@ function Report({ navigate, report, setReport }) {
     try {
       const formData = new FormData()
 
-      // The Flask AI API expects the uploaded image
+      // Flask AI API expects the image
       // under the field name "image".
       formData.append('image', report.file)
 
@@ -499,18 +492,6 @@ function Report({ navigate, report, setReport }) {
 
       console.log('AI response:', data)
 
-      // Your AI previously returned:
-      // {
-      //   success: true,
-      //   result: {
-      //     category: "...",
-      //     confidence: 98,
-      //     priority: "...",
-      //     description: "..."
-      //   }
-      // }
-      //
-      // So use data.result when it exists.
       const aiResult = data.result || data.ai || data
 
       setReport((current) => ({
@@ -665,7 +646,12 @@ function Report({ navigate, report, setReport }) {
       </section>
     </main>
   )
-        }
+}
+
+/* ============================================================
+   RESULT PAGE
+   ============================================================ */
+
 function Result({ navigate, report, setReport }) {
   const [submitted, setSubmitted] = useState(false)
 
@@ -808,6 +794,10 @@ function Result({ navigate, report, setReport }) {
   )
 }
 
+/* ============================================================
+   TRACKING PAGE
+   ============================================================ */
+
 function Tracking({ report }) {
   const [query, setQuery] = useState(report.id || '')
   const [searched, setSearched] = useState(Boolean(report.submitted))
@@ -947,6 +937,10 @@ function Tracking({ report }) {
     </main>
   )
 }
+
+/* ============================================================
+   MAIN APP
+   ============================================================ */
 
 function App() {
   const [page, setPage] = useState(
