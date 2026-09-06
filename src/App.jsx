@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
@@ -17,45 +18,54 @@ function Icon({ name, size = 20 }) {
         <path d="m13 6 6 6-6 6" />
       </>
     ),
+
     pin: (
       <>
         <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
         <circle cx="12" cy="10" r="2.5" />
       </>
     ),
+
     camera: (
       <>
         <path d="M4 7h3l1.5-2h7L17 7h3v11H4Z" />
         <circle cx="12" cy="12.5" r="3" />
       </>
     ),
+
     clock: (
       <>
         <circle cx="12" cy="12" r="8" />
         <path d="M12 8v4l2.5 2" />
       </>
     ),
+
     check: <path d="m5 12 4 4L19 6" />,
+
     search: (
       <>
         <circle cx="10.5" cy="10.5" r="6.5" />
         <path d="m16 16 4 4" />
       </>
     ),
+
     upload: (
       <>
         <path d="M12 16V4m0 0L7 9m5-5 5 5" />
         <path d="M5 15v4h14v-4" />
       </>
     ),
+
     shield: (
       <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" />
     ),
+
     menu: (
       <>
         <path d="M4 7h16M4 12h16M4 17h16" />
       </>
     ),
+
     close: (
       <>
         <path d="m6 6 12 12M18 6 6 18" />
@@ -205,7 +215,10 @@ function Home({ navigate }) {
           </p>
 
           <div className="hero-actions">
-            <Button onClick={() => navigate('report')} icon="arrow">
+            <Button
+              onClick={() => navigate('report')}
+              icon="arrow"
+            >
               Report an issue
             </Button>
 
@@ -239,8 +252,9 @@ function Home({ navigate }) {
           <div>
             <strong>AI-Powered Detection</strong>
             <p>
-              CivicFix analyzes uploaded photos to identify civic problems
-              such as potholes, garbage, damaged roads and water leakage.
+              CivicFix analyzes uploaded photos to identify civic
+              problems such as potholes, garbage, damaged roads and
+              water leakage.
             </p>
           </div>
         </div>
@@ -253,7 +267,7 @@ function Home({ navigate }) {
           <div>
             <strong>Smart Location</strong>
             <p>
-              The user's location is captured and converted into a readable
+              Your location is captured and converted into a readable
               address to make every complaint easier to locate.
             </p>
           </div>
@@ -267,8 +281,8 @@ function Home({ navigate }) {
           <div>
             <strong>Smart Complaint Routing</strong>
             <p>
-              AI helps identify the issue and route the complaint toward the
-              appropriate civic department.
+              AI helps identify the issue and route the complaint
+              toward the appropriate civic department.
             </p>
           </div>
         </div>
@@ -282,7 +296,8 @@ function Home({ navigate }) {
           </div>
 
           <p>
-            Every report gets the right attention, without the runaround.
+            Every report gets the right attention, without the
+            runaround.
           </p>
         </div>
 
@@ -316,7 +331,10 @@ function Home({ navigate }) {
           <h2>See something? Say something.</h2>
         </div>
 
-        <Button onClick={() => navigate('report')} icon="arrow">
+        <Button
+          onClick={() => navigate('report')}
+          icon="arrow"
+        >
           Start a report
         </Button>
       </section>
@@ -325,7 +343,7 @@ function Home({ navigate }) {
 }
 
 /* ============================================================
-   REPORT PAGE
+   REPORT PAGE — CLEANER USER EXPERIENCE
    ============================================================ */
 
 function Report({ navigate, report, setReport }) {
@@ -338,6 +356,16 @@ function Report({ navigate, report, setReport }) {
     const file = event.target.files?.[0]
 
     if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose an image file.')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Please choose an image smaller than 10MB.')
+      return
+    }
 
     setReport((current) => ({
       ...current,
@@ -352,7 +380,7 @@ function Report({ navigate, report, setReport }) {
     setError('')
 
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported on this device.')
+      setError('Location is not supported on this device.')
       return
     }
 
@@ -369,7 +397,7 @@ function Report({ navigate, report, setReport }) {
           ...current,
           latitude,
           longitude,
-          location: 'Finding address...',
+          location: 'Finding your address...',
         }))
 
         try {
@@ -407,7 +435,10 @@ function Report({ navigate, report, setReport }) {
               `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
           }))
         } catch (error) {
-          console.error('Reverse geocoding failed:', error)
+          console.error(
+            'Reverse geocoding failed:',
+            error
+          )
 
           setReport((current) => ({
             ...current,
@@ -418,7 +449,9 @@ function Report({ navigate, report, setReport }) {
         }
       },
       () => {
-        setError('Unable to access your location.')
+        setError(
+          'Location permission was not granted. You can try again.'
+        )
 
         setReport((current) => ({
           ...current,
@@ -447,38 +480,68 @@ function Report({ navigate, report, setReport }) {
       formData.append('image', report.file)
 
       if (report.description) {
-        formData.append('description', report.description)
+        formData.append(
+          'description',
+          report.description
+        )
       }
 
       if (report.latitude != null) {
-        formData.append('latitude', String(report.latitude))
+        formData.append(
+          'latitude',
+          String(report.latitude)
+        )
       }
 
       if (report.longitude != null) {
-        formData.append('longitude', String(report.longitude))
+        formData.append(
+          'longitude',
+          String(report.longitude)
+        )
       }
 
-      console.log('Sending image to CivicFix AI...')
+      console.log(
+        'Sending image to CivicFix AI...'
+      )
 
-      const response = await fetch(`${API_URL}/analyze`, {
-        method: 'POST',
-        body: formData,
-      })
+      const response = await fetch(
+        `${API_URL}/analyze`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
 
-      console.log('AI response status:', response.status)
+      console.log(
+        'AI response status:',
+        response.status
+      )
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('AI server error:', errorText)
+        const errorText =
+          await response.text()
 
-        throw new Error(`AI server error: ${response.status}`)
+        console.error(
+          'AI server error:',
+          errorText
+        )
+
+        throw new Error(
+          `AI server error: ${response.status}`
+        )
       }
 
       const data = await response.json()
 
-      console.log('AI response:', data)
+      console.log(
+        'AI response:',
+        data
+      )
 
-      const aiResult = data.result || data.ai || data
+      const aiResult =
+        data.result ||
+        data.ai ||
+        data
 
       setReport((current) => ({
         ...current,
@@ -489,7 +552,10 @@ function Report({ navigate, report, setReport }) {
 
       navigate('result')
     } catch (err) {
-      console.error('AI analysis failed:', err)
+      console.error(
+        'AI analysis failed:',
+        err
+      )
 
       setError(
         'AI analysis failed. Please make sure your AI backend is running.'
@@ -500,48 +566,118 @@ function Report({ navigate, report, setReport }) {
   }
 
   return (
-    <main className="subpage">
-      <section className="page-pad narrow-header">
-        <p className="eyebrow">New report</p>
+    <main className="subpage report-page">
 
-        <h1>What needs fixing?</h1>
+      <section className="page-pad report-header">
+        <div>
+          <p className="eyebrow">
+            New report
+          </p>
 
-        <p>
-          Give us the details and we'll route your report to the right
-          people.
-        </p>
+          <h1>
+            Report a civic problem
+          </h1>
+
+          <p className="report-intro">
+            Follow these simple steps. Upload a photo,
+            add your location, and let CivicFix analyze
+            the problem.
+          </p>
+        </div>
+
+        <div className="report-progress">
+          <span className="progress-active">
+            1
+          </span>
+
+          <span>Photo</span>
+
+          <span className="progress-line" />
+
+          <span>2</span>
+          <span>Location</span>
+
+          <span className="progress-line" />
+
+          <span>3</span>
+          <span>Analyze</span>
+        </div>
       </section>
 
-      <section className="report-layout page-pad">
-        <div className="form-panel">
+      <section className="report-clean-layout page-pad">
+
+        <div className="report-main-card">
+
+          <div className="report-step-heading">
+            <div className="step-badge">
+              1
+            </div>
+
+            <div>
+              <h2>Upload a photo</h2>
+
+              <p>
+                Take a clear photo of the civic problem
+                or choose one from your device.
+              </p>
+            </div>
+          </div>
+
           <div
-            className={`upload-zone ${
-              report.image ? 'has-image' : ''
+            className={`upload-zone-clean ${
+              report.image
+                ? 'has-image'
+                : ''
             }`}
-            onClick={() => inputRef.current?.click()}
-            role="button"
-            tabIndex="0"
-            onKeyDown={(event) =>
-              event.key === 'Enter' &&
+            onClick={() =>
               inputRef.current?.click()
             }
+            role="button"
+            tabIndex="0"
+            onKeyDown={(event) => {
+              if (
+                event.key === 'Enter' ||
+                event.key === ' '
+              ) {
+                inputRef.current?.click()
+              }
+            }}
           >
             {report.image ? (
-              <img src={report.image} alt="Selected civic issue" />
-            ) : (
               <>
-                <span className="upload-icon">
-                  <Icon name="camera" size={24} />
+                <img
+                  src={report.image}
+                  alt="Selected civic issue"
+                />
+
+                <div className="upload-overlay">
+                  <span>
+                    Change photo
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="upload-empty">
+                <span className="upload-icon-large">
+                  <Icon
+                    name="camera"
+                    size={30}
+                  />
                 </span>
 
-                <strong>Upload a photo</strong>
+                <strong>
+                  Tap to upload a photo
+                </strong>
 
                 <span>
-                  Choose from gallery/files or take a photo
+                  You can also take a photo
+                  using your camera
                 </span>
 
-                <small>JPG, PNG up to 10MB</small>
-              </>
+                <small>
+                  JPG or PNG · Maximum 10MB
+                </small>
+              </div>
             )}
 
             <input
@@ -552,14 +688,53 @@ function Report({ navigate, report, setReport }) {
             />
           </div>
 
-          <div className="location-row">
-            <div>
-              <label>Location</label>
+          <div className="report-divider" />
 
-              <p className={report.location ? 'location-set' : ''}>
-                <Icon name="pin" size={16} />
-                {report.location || 'No location selected'}
+          <div className="report-step-heading">
+            <div className="step-badge">
+              2
+            </div>
+
+            <div>
+              <h2>
+                Add your location
+              </h2>
+
+              <p>
+                This helps us identify where the
+                problem is located.
               </p>
+            </div>
+          </div>
+
+          <div className="location-box-clean">
+
+            <div className="location-information">
+
+              <span className="location-icon-clean">
+                <Icon
+                  name="pin"
+                  size={22}
+                />
+              </span>
+
+              <div>
+                <strong>
+                  Your location
+                </strong>
+
+                <p
+                  className={
+                    report.location
+                      ? 'location-value-set'
+                      : ''
+                  }
+                >
+                  {report.location ||
+                    'Location has not been added yet'}
+                </p>
+              </div>
+
             </div>
 
             <Button
@@ -567,94 +742,256 @@ function Report({ navigate, report, setReport }) {
               onClick={locate}
               icon="pin"
             >
-              Use current location
+              Use my location
             </Button>
+
           </div>
 
-          <label className="field-label" htmlFor="description">
-            Tell us more <span>Optional</span>
-          </label>
+          <div className="report-divider" />
+
+          <div className="report-step-heading">
+            <div className="step-badge">
+              3
+            </div>
+
+            <div>
+              <h2>
+                Add more details
+                <span className="optional-label">
+                  Optional
+                </span>
+              </h2>
+
+              <p>
+                Tell us anything that may help
+                explain the problem.
+              </p>
+            </div>
+          </div>
 
           <textarea
+            className="description-clean"
             id="description"
-            value={report.description || ''}
+            value={
+              report.description || ''
+            }
             onChange={(event) =>
               setReport((current) => ({
                 ...current,
-                description: event.target.value,
+                description:
+                  event.target.value,
               }))
             }
-            placeholder="Add any helpful details..."
-            rows="5"
+            placeholder="Example: There is a large pothole near the school entrance..."
+            rows="4"
           />
 
-          {error && <p className="form-error">{error}</p>}
+          {error && (
+            <div className="form-error-clean">
+              <Icon
+                name="shield"
+                size={17}
+              />
 
-          <Button
-            onClick={analyze}
-            disabled={loading}
-            icon="arrow"
-          >
-            {loading ? (
-              <>
-                <span className="spinner" />
-                Analyzing with AI...
-              </>
-            ) : (
-              'Analyze issue'
-            )}
-          </Button>
+              <span>
+                {error}
+              </span>
+            </div>
+          )}
 
-          <p className="privacy-note">
-            <Icon name="shield" size={14} />
-            Your report helps improve your neighborhood.
-          </p>
+          <div className="analyze-area">
+
+            <Button
+              onClick={analyze}
+              disabled={loading}
+              icon="arrow"
+            >
+              {loading ? (
+                <>
+                  <span className="spinner" />
+                  Analyzing with AI...
+                </>
+              ) : (
+                'Analyze my report'
+              )}
+            </Button>
+
+            <p>
+              CivicFix will analyze your photo
+              and identify the civic issue.
+            </p>
+
+          </div>
+
         </div>
 
-        <aside className="side-note">
-          <span className="side-note-icon">
-            <Icon name="shield" size={22} />
-          </span>
+        <aside className="report-help-card">
 
-          <h3>Smart routing</h3>
+          <div className="help-card-icon">
+            <Icon
+              name="shield"
+              size={24}
+            />
+          </div>
 
-          <p>
-            Our AI looks at your photo and details to identify the issue
-            and send it to the right city team.
-          </p>
+          <h3>
+            How CivicFix works
+          </h3>
 
-          <div className="side-rule" />
+          <div className="help-step">
+            <span>1</span>
 
-          <p className="small-copy">
-            Your location is only used to find the right service area.
-          </p>
+            <div>
+              <strong>
+                Upload
+              </strong>
+
+              <p>
+                Add a photo showing the problem.
+              </p>
+            </div>
+          </div>
+
+          <div className="help-step">
+            <span>2</span>
+
+            <div>
+              <strong>
+                Locate
+              </strong>
+
+              <p>
+                Add the location where it happened.
+              </p>
+            </div>
+          </div>
+
+          <div className="help-step">
+            <span>3</span>
+
+            <div>
+              <strong>
+                Analyze
+              </strong>
+
+              <p>
+                AI identifies the issue for you.
+              </p>
+            </div>
+          </div>
+
+          <div className="help-note">
+            <Icon
+              name="check"
+              size={16}
+            />
+
+            <span>
+              You don't need to know the
+              technical name of the problem.
+              Just show us what you see.
+            </span>
+          </div>
+
         </aside>
+
       </section>
     </main>
   )
-      }
-/* ============================================================
-   RESULT PAGE
-   ============================================================ */
+}
+function Result({ navigate, report, setReport }) {
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(
+    Boolean(report?.submitted)
+  )
 
-function Result({ navigate, report }) {
-  if (!report?.analyzed) {
+  const submitComplaint = () => {
+    setSubmitting(true)
+
+    const complaintId =
+      report?.id ||
+      `CF-${Date.now().toString().slice(-6)}`
+
+    setReport((current) => ({
+      ...current,
+      submitted: true,
+      id: complaintId,
+    }))
+
+    setSubmitted(true)
+    setSubmitting(false)
+  }
+
+  if (!report) {
     return (
       <main className="subpage">
-        <section className="page-pad empty-state">
-          <span className="empty-icon">
-            <Icon name="shield" size={26} />
-          </span>
+        <section className="empty-state page-pad">
+          <div className="empty-icon">
+            <Icon name="camera" size={28} />
+          </div>
 
-          <h1>No analysis yet</h1>
+          <h1>No report yet</h1>
 
           <p>
-            Upload a photo and analyze an issue first.
+            Start by uploading a photo of the civic
+            problem you want to report.
           </p>
 
-          <Button onClick={() => navigate('report')} icon="arrow">
-            Report an issue
+          <Button
+            onClick={() => navigate('report')}
+            icon="arrow"
+          >
+            Create a report
           </Button>
+        </section>
+      </main>
+    )
+  }
+
+  if (submitted) {
+    return (
+      <main className="subpage">
+        <section className="success-page page-pad">
+          <div className="success-icon">
+            <Icon name="check" size={34} />
+          </div>
+
+          <p className="eyebrow">
+            Complaint submitted
+          </p>
+
+          <h1>
+            Your report is ready.
+          </h1>
+
+          <p className="success-message">
+            Your complaint has been created successfully.
+            Keep your complaint ID so you can track it later.
+          </p>
+
+          <div className="complaint-id-card">
+            <span>Complaint ID</span>
+
+            <strong>
+              {report.id}
+            </strong>
+          </div>
+
+          <div className="success-actions">
+            <Button
+              onClick={() => navigate('tracking')}
+              icon="search"
+            >
+              Track complaint
+            </Button>
+
+            <Button
+              variant="secondary"
+              onClick={() => navigate('home')}
+            >
+              Back to home
+            </Button>
+          </div>
         </section>
       </main>
     )
@@ -663,306 +1000,409 @@ function Result({ navigate, report }) {
   const category =
     report.category ||
     report.issue ||
-    report.type ||
-    'Civic Issue'
+    'Civic issue detected'
 
   const confidence =
     report.confidence != null
       ? `${report.confidence}%`
-      : 'Available from AI'
+      : 'AI detected'
 
   const priority =
     report.priority ||
-    report.severity ||
-    'Not specified'
+    'Normal'
 
   const description =
     report.description ||
-    'AI has analyzed the submitted civic issue.'
+    report.details ||
+    'The AI has analyzed your uploaded image.'
 
   return (
     <main className="subpage">
-      <section className="page-pad narrow-header">
-        <p className="eyebrow">AI analysis complete</p>
+      <section className="page-pad result-header">
+        <p className="eyebrow">
+          AI analysis complete
+        </p>
 
-        <h1>Here's what we found.</h1>
+        <h1>
+          We found an issue.
+        </h1>
 
         <p>
-          Your report has been analyzed and is ready to be submitted.
+          Review the information below before submitting
+          your complaint.
         </p>
       </section>
 
-      <section className="result-layout page-pad">
-        <div className="result-card">
-          <div className="result-card-top">
-            <div>
-              <span className="result-kicker">
-                Detected issue
-              </span>
+      <section className="page-pad result-layout">
 
-              <h2>{category}</h2>
-            </div>
-
-            <span className="result-check">
-              <Icon name="check" size={22} />
-            </span>
-          </div>
-
-          <div className="result-grid">
-            <div className="result-item">
-              <span>Category</span>
-              <strong>{category}</strong>
-            </div>
-
-            <div className="result-item">
-              <span>AI confidence</span>
-              <strong>{confidence}</strong>
-            </div>
-
-            <div className="result-item">
-              <span>Priority</span>
-              <strong
-                className={
-                  String(priority).toLowerCase().includes('high')
-                    ? 'priority-high'
-                    : String(priority)
-                        .toLowerCase()
-                        .includes('medium')
-                    ? 'priority-medium'
-                    : 'priority-low'
-                }
-              >
-                {priority}
-              </strong>
-            </div>
-
-            <div className="result-item">
-              <span>Location</span>
-              <strong>
-                {report.location || 'Location not provided'}
-              </strong>
-            </div>
-          </div>
-
-          <div className="result-description">
-            <span>Description</span>
-            <p>{description}</p>
-          </div>
-
-          {report.image && (
-            <div className="result-image-wrap">
-              <img
-                src={report.image}
-                alt="Reported civic issue"
+        <div className="result-image-card">
+          {report.image ? (
+            <img
+              src={report.image}
+              alt="Reported civic issue"
+            />
+          ) : (
+            <div className="result-no-image">
+              <Icon
+                name="camera"
+                size={30}
               />
             </div>
           )}
 
-          <div className="result-actions">
-            <Button
-              onClick={() => navigate('report')}
-              variant="secondary"
-            >
-              Edit report
-            </Button>
-
-            <Button
-              onClick={() => navigate('tracking')}
-              icon="arrow"
-            >
-              Continue
-            </Button>
+          <div className="result-image-label">
+            Uploaded photo
           </div>
         </div>
 
-        <aside className="result-side-note">
-          <span className="side-note-icon">
-            <Icon name="check" size={22} />
-          </span>
+        <div className="result-details-card">
 
-          <h3>Ready for the next step</h3>
+          <div className="result-category">
+            <span className="result-label">
+              Issue detected
+            </span>
 
-          <p>
-            The AI has identified the issue. You can now continue
-            through the CivicFix complaint flow.
-          </p>
+            <h2>
+              {category}
+            </h2>
+          </div>
 
-          <div className="side-rule" />
+          <div className="result-metrics">
 
-          <p className="small-copy">
-            Keep your complaint details available for tracking.
-          </p>
-        </aside>
+            <div>
+              <span>
+                Confidence
+              </span>
+
+              <strong>
+                {confidence}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Priority
+              </span>
+
+              <strong>
+                {priority}
+              </strong>
+            </div>
+
+          </div>
+
+          <div className="result-info-block">
+            <span>
+              Description
+            </span>
+
+            <p>
+              {description}
+            </p>
+          </div>
+
+          <div className="result-info-block">
+            <span>
+              Location
+            </span>
+
+            <p>
+              {report.location ||
+                'Location not added'}
+            </p>
+          </div>
+
+          <div className="result-submit-box">
+
+            <div>
+              <strong>
+                Everything looks correct?
+              </strong>
+
+              <p>
+                Submit this complaint to create
+                your CivicFix complaint ID.
+              </p>
+            </div>
+
+            <Button
+              onClick={submitComplaint}
+              disabled={submitting}
+              icon="arrow"
+            >
+              {submitting
+                ? 'Submitting...'
+                : 'Submit complaint'}
+            </Button>
+
+          </div>
+
+          <button
+            className="text-button"
+            onClick={() => navigate('report')}
+          >
+            ← Go back and edit report
+          </button>
+
+        </div>
+
       </section>
     </main>
   )
 }
 
-/* ============================================================
-   TRACKING PAGE
-   ============================================================ */
 
-function Tracking({ navigate }) {
-  const [complaintId, setComplaintId] = useState('')
-  const [searched, setSearched] = useState(false)
+function Tracking({ navigate, report }) {
+  const [complaintId, setComplaintId] =
+    useState(report?.id || '')
 
-  const searchComplaint = (event) => {
+  const [searched, setSearched] =
+    useState(Boolean(report?.submitted))
+
+  const handleSearch = (event) => {
     event.preventDefault()
 
-    if (!complaintId.trim()) return
+    if (!complaintId.trim()) {
+      return
+    }
 
     setSearched(true)
   }
 
   return (
-    <main className="subpage">
-      <section className="page-pad narrow-header">
-        <p className="eyebrow">Complaint tracking</p>
+    <main className="subpage tracking-page">
 
-        <h1>Track your complaint.</h1>
+      <section className="page-pad tracking-header">
+        <p className="eyebrow">
+          Complaint tracking
+        </p>
+
+        <h1>
+          Track your complaint.
+        </h1>
 
         <p>
-          Enter your complaint ID to check its current status.
+          Enter your CivicFix complaint ID to
+          check your report.
         </p>
       </section>
 
-      <section className="tracking-page page-pad">
+      <section className="page-pad tracking-content">
+
         <div className="tracking-card">
-          <form onSubmit={searchComplaint}>
+
+          <div className="tracking-icon">
+            <Icon
+              name="search"
+              size={25}
+            />
+          </div>
+
+          <h2>
+            Find your complaint
+          </h2>
+
+          <p>
+            Your complaint ID looks like
+            <strong> CF-123456</strong>.
+          </p>
+
+          <form
+            className="tracking-form"
+            onSubmit={handleSearch}
+          >
             <label htmlFor="complaint-id">
               Complaint ID
             </label>
 
-            <div className="tracking-input">
-              <input
-                id="complaint-id"
-                value={complaintId}
-                onChange={(event) =>
-                  setComplaintId(event.target.value)
-                }
-                placeholder="Enter complaint ID"
-              />
+            <input
+              id="complaint-id"
+              value={complaintId}
+              onChange={(event) =>
+                setComplaintId(
+                  event.target.value.toUpperCase()
+                )
+              }
+              placeholder="Enter your ID"
+              autoComplete="off"
+            />
 
-              <Button type="submit" icon="search">
-                Track
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              icon="search"
+            >
+              Track complaint
+            </Button>
           </form>
 
-          {searched && (
-            <div className="tracking-status">
-              <div className="tracking-status-head">
+          {searched && complaintId && (
+            <div className="tracking-result">
+
+              <div className="tracking-result-top">
                 <div>
-                  <span>Complaint</span>
-                  <strong>{complaintId}</strong>
+                  <span>
+                    Complaint
+                  </span>
+
+                  <strong>
+                    {complaintId}
+                  </strong>
                 </div>
 
                 <span className="status-badge">
-                  Received
+                  Submitted
                 </span>
               </div>
 
-              <div className="status-timeline">
-                <div className="status-step active">
-                  <span className="status-dot" />
+              <div className="tracking-timeline">
+
+                <div className="timeline-item completed">
+                  <span>
+                    <Icon
+                      name="check"
+                      size={15}
+                    />
+                  </span>
 
                   <div>
-                    <strong>Complaint received</strong>
-                    <small>
-                      Your complaint has been recorded.
-                    </small>
+                    <strong>
+                      Complaint submitted
+                    </strong>
+
+                    <p>
+                      Your complaint has been created.
+                    </p>
                   </div>
                 </div>
 
-                <div className="status-step">
-                  <span className="status-dot" />
+                <div className="timeline-line" />
+
+                <div className="timeline-item current">
+                  <span>
+                    <Icon
+                      name="clock"
+                      size={15}
+                    />
+                  </span>
 
                   <div>
-                    <strong>Under review</strong>
-                    <small>
-                      The responsible department will review it.
-                    </small>
+                    <strong>
+                      Under review
+                    </strong>
+
+                    <p>
+                      The complaint is ready for
+                      civic department review.
+                    </p>
                   </div>
                 </div>
 
-                <div className="status-step">
-                  <span className="status-dot" />
+                <div className="timeline-line" />
+
+                <div className="timeline-item">
+                  <span>
+                    <Icon
+                      name="check"
+                      size={15}
+                    />
+                  </span>
 
                   <div>
-                    <strong>In progress</strong>
-                    <small>
-                      Work will begin after assignment.
-                    </small>
+                    <strong>
+                      Resolution
+                    </strong>
+
+                    <p>
+                      Updates will appear here when
+                      the issue is resolved.
+                    </p>
                   </div>
                 </div>
 
-                <div className="status-step">
-                  <span className="status-dot" />
-
-                  <div>
-                    <strong>Resolved</strong>
-                    <small>
-                      The reported issue has been fixed.
-                    </small>
-                  </div>
-                </div>
               </div>
+
             </div>
           )}
 
-          {!searched && (
-            <div className="tracking-empty">
-              <span className="empty-icon">
-                <Icon name="search" size={23} />
-              </span>
-
-              <h3>Enter your complaint ID</h3>
-
-              <p>
-                Your complaint ID can be used to check the progress
-                of your report.
-              </p>
-            </div>
-          )}
         </div>
+
+        <div className="tracking-help">
+
+          <div className="help-card-icon">
+            <Icon
+              name="shield"
+              size={22}
+            />
+          </div>
+
+          <h3>
+            Don't have a complaint ID?
+          </h3>
+
+          <p>
+            Create a new report and CivicFix will
+            generate an ID after you submit it.
+          </p>
+
+          <Button
+            variant="secondary"
+            onClick={() => navigate('report')}
+            icon="arrow"
+          >
+            Create a report
+          </Button>
+
+        </div>
+
       </section>
     </main>
   )
 }
 
-/* ============================================================
-   APP
-   ============================================================ */
 
 function App() {
-  const [page, setPage] = useState('home')
+  const [page, setPage] =
+    useState('home')
 
-  const [report, setReport] = useState({
-    file: null,
-    image: '',
-    description: '',
-    location: '',
-    latitude: null,
-    longitude: null,
-    category: '',
-    confidence: null,
-    priority: '',
-    analyzed: false,
-  })
+  const [report, setReport] =
+    useState({
+      file: null,
+      image: '',
+      description: '',
+      latitude: null,
+      longitude: null,
+      location: '',
+      category: '',
+      confidence: null,
+      priority: '',
+      analyzed: false,
+      submitted: false,
+      id: '',
+    })
 
-  useEffect(() => {
+  const navigate = (nextPage) => {
+    setPage(nextPage)
+
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     })
-  }, [page])
-
-  const navigate = (nextPage) => {
-    setPage(nextPage)
   }
+
+  useEffect(() => {
+    document.title =
+      page === 'home'
+        ? 'CivicFix'
+        : page === 'report'
+          ? 'Report an Issue — CivicFix'
+          : page === 'tracking'
+            ? 'Track Complaint — CivicFix'
+            : 'AI Result — CivicFix'
+  }, [page])
 
   return (
     <div className="app">
+
       <Navbar
         page={page}
         navigate={navigate}
@@ -984,18 +1424,22 @@ function App() {
         <Result
           navigate={navigate}
           report={report}
+          setReport={setReport}
         />
       )}
 
       {page === 'tracking' && (
-        <Tracking navigate={navigate} />
+        <Tracking
+          navigate={navigate}
+          report={report}
+        />
       )}
 
       <Footer navigate={navigate} />
+
     </div>
   )
 }
 
 export default App
-
       
